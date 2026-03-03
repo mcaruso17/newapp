@@ -23,3 +23,59 @@ def genera_password(length: int = PASSWORD_LENGTH) -> str:
             and any(c.isdigit() for c in password)
             and any(c in "!@#$%" for c in password)):
             return password
+def carica_utenti(file_excel: str):
+    """Legge l'Excel e carica gli utenti nel database"""
+    # Inizializza il database (crea la tabella se non esiste)
+    init_database()
+
+    # Legge l'Excel
+    df = pd.read_excel(file_excel)
+
+    # Lista per salvare le credenziali da comunicare agli utenti
+    credenziali = []
+
+    for _, riga in df.iterrows():
+        nominativo = riga["nominativo"]
+        email = genera_email(nominativo)
+        password = genera_password()
+
+        # Hasha la password
+        pw_hash, salt = Authenticator.hash_password(password)
+        stored = f"{pw_hash}:{salt}"
+
+        with get_connection() as conn:
+            try:
+                conn.execute(
+                    """INSERT INTO users 
+                    (nominativo, email, password_hash, ruolo, ufficio, stanza, interno, cellulare)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                    (
+                        nominativo,
+                        email,
+                        stored,
+                        riga["ruolo"],
+                        str(riga["ufficio"]),
+                        str(riga.get("stanza", "")),
+                        str(riga.get("interno", "")),
+                        str(riga.get("cellulare", ""))
+                    )
+                )
+                credenziali.append({
+                    "nominativo": nominativo,
+                    "email": email,
+                    "password": password  # in chiaro, solo per comunicarla
+                })
+                print(f"Creato: {nominativo} -> {email}")
+            except Exception as e:
+                print(f"Errore per {nominativo}: {e}")
+
+    # Salva le credenziali in un file da stampare e poi eliminare
+    if credenziali:
+        df_cred = pd.DataFrame(credenziali)
+        df_cred.to_excel("credenziali_temporanee.xlsx", index=False)
+        print(f"\nCaricati {len(credenziali)} utenti")
+        print("Credenziali salvate in 'credenziali_temporanee.xlsx'")
+        print("IMPORTANTE: stampa questo file, distribuiscilo e poi ELIMINALO!")
+
+if __name__ == "__main__":
+    carica_utenti("personale.xlsx")
