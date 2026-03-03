@@ -6,11 +6,11 @@ from auth import Authenticator
 from config import PASSWORD_LENGTH, EMAIL_DOMAIN, RUOLI, UFFICI
 
 def genera_email(nominativo: str) -> str:
-    """Da 'Rossi Mario' genera 'm.rossi@mef.gov.it'"""
+    """Da 'Rossi Mario' genera 'mario.rossi@mef.gov.it'"""
     parti = nominativo.strip().split()
     cognome = parti[0].lower()
     nome = parti[1].lower() if len(parti) > 1 else ""
-    return f"{nome[0]}.{cognome}@{EMAIL_DOMAIN}"
+    return f"{nome}.{cognome}@{EMAIL_DOMAIN}"
 
 def genera_password(length: int = PASSWORD_LENGTH) -> str:
     """Genera una password casuale sicura"""
