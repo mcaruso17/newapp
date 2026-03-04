@@ -110,6 +110,7 @@ def pagina_carica_utenti():
         df = pd.read_excel(file)
         df.columns = df.columns.str.strip().str.lower()
         df = df.dropna(subset=["nominativo"])
+        credenziali = []
 
         for _, riga in df.iterrows():
             nominativo = riga["nominativo"]
