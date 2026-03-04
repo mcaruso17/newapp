@@ -86,7 +86,7 @@ class Authenticator:
 
         st.session_state.deve_cambiare_password = False
         return True, "Password cambiata con successo"
-  @staticmethod
+    @staticmethod
     def reset_password(user_id: int) -> tuple:
         """Admin resetta la password di un utente"""
         nuova_password = secrets.token_urlsafe(12)
@@ -100,8 +100,9 @@ class Authenticator:
             )
 
         return nuova_password
+    
 
-    @staticmethod
+@staticmethod
     def logout():
         """Chiude la sessione"""
         for key in list(st.session_state.keys()):
