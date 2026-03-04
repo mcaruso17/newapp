@@ -6,11 +6,39 @@ from auth import Authenticator
 from config import PASSWORD_LENGTH, EMAIL_DOMAIN, RUOLI, UFFICI
 
 def genera_email(nominativo: str) -> str:
-    """Da 'Sapienza Maria Rosa' genera 'mariarosa.sapienza@mef.gov.it'"""
+    """Da 'DI MARTINO MAURIZIO' genera 'maurizio.dimartino@mef.gov.it'"""
     nominativo = str(nominativo).strip()
+    
+    # Gestisce apostrofo: "D'ARISTOTILE SARA" -> "DARISTOTILE SARA"
+    nominativo = nominativo.replace("'", "")
+    
     parti = nominativo.split()
-    cognome = parti[0].lower()
-    nome = "".join(parti[1:]).lower()  # unisce tutto dopo il cognome
+    
+    # Particelle che fanno parte del cognome
+    particelle = ["DI", "DE", "LI", "DA", "LO", "LA", "DEL", "DEI", "DELLO", "DELLA"]
+    
+    # Costruisci il cognome unendo le particelle
+    cognome_parti = []
+    i = 0
+    while i < len(parti):
+        if parti[i].upper() in particelle and i < len(parti) - 2:
+            # La particella fa parte del cognome, attaccala alla parola dopo
+            cognome_parti.append(parti[i])
+            cognome_parti.append(parti[i + 1])
+            i += 2
+        else:
+            # Prima parola non-particella: fine del cognome
+            if not cognome_parti:
+                cognome_parti.append(parti[i])
+                i += 1
+            break
+    
+    # Tutto il resto è il nome
+    nome_parti = parti[i:]
+    
+    cognome = "".join(cognome_parti).lower()
+    nome = "".join(nome_parti).lower()
+    
     return f"{nome}.{cognome}@{EMAIL_DOMAIN}"
 
 def genera_password(length: int = PASSWORD_LENGTH) -> str:
