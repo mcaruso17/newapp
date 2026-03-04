@@ -7,7 +7,8 @@ from config import PASSWORD_LENGTH, EMAIL_DOMAIN, RUOLI, UFFICI
 
 def genera_email(nominativo: str) -> str:
     """Da 'Rossi Mario' genera 'mario.rossi@mef.gov.it'"""
-    parti = nominativo.strip().split()
+    nominativo = str(nominativo).strip()
+    parti = nominativo.split()
     cognome = parti[0].lower()
     nome = parti[1].lower() if len(parti) > 1 else ""
     return f"{nome}.{cognome}@{EMAIL_DOMAIN}"
