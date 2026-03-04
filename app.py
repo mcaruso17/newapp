@@ -1,6 +1,6 @@
 import streamlit as st
 from auth import Authenticator
-from permissions import puo_modificare, puo_visualizzare, is_admin, richiedi_permesso
+from permission import puo_modificare, puo_visualizzare, is_admin, richiedi_permesso
 from database import init_database
 from database import init_database, get_connection
 
