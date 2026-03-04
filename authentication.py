@@ -59,7 +59,8 @@ class Authenticator:
         st.session_state.deve_cambiare_password = bool(user["deve_cambiare_password"])
 
         return True, "Login effettuato"
-  def cambia_password(self, password_attuale: str, nuova_password: str) -> tuple:
+
+    def cambia_password(self, password_attuale: str, nuova_password: str) -> tuple:
         """Permette all'utente di cambiare la propria password"""
         if len(nuova_password) < 8:
             return False, "La password deve essere di almeno 8 caratteri"
@@ -103,7 +104,7 @@ class Authenticator:
     
 
 @staticmethod
-    def logout():
-        """Chiude la sessione"""
-        for key in list(st.session_state.keys()):
-            del st.session_state[key]
+def logout():
+    """Chiude la sessione"""
+    for key in list(st.session_state.keys()):
+        del st.session_state[key]
