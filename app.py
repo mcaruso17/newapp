@@ -5,6 +5,7 @@ from database import init_database
 from database import init_database, get_connection
 import pandas as pd
 from load_users import genera_email, genera_password
+from config import ADMIN_USERNAME, ADMIN_PASSWORD
 
 # Inizializza database e autenticatore
 init_database()
@@ -63,7 +64,19 @@ def pagina_principale():
         pannello_admin()
 def pagina_carica_utenti():
     """Permette all'admin di caricare utenti da Excel"""
-    st.title("Caricamento Utenti")
+    st.title("Caricamento Utenti (Area Riservata)")
+
+    username = st.text_input("Username admin")
+    password = st.text_input("Password admin", type="password")
+
+    if not st.button("Accedi come admin"):
+        return
+
+    if username != ADMIN_USERNAME or password != ADMIN_PASSWORD:
+        st.error("Credenziali admin non valide")
+        return
+
+    st.success("Accesso admin confermato")
 
     file = st.file_uploader("Carica il file Excel del personale", type=["xlsx"])
 
@@ -74,9 +87,9 @@ def pagina_carica_utenti():
         for _, riga in df.iterrows():
             nominativo = riga["nominativo"]
             email = genera_email(nominativo)
-            password = genera_password()
+            password_utente = genera_password()
 
-            pw_hash, salt = Authenticator.hash_password(password)
+            pw_hash, salt = Authenticator.hash_password(password_utente)
             stored = f"{pw_hash}:{salt}"
 
             with get_connection() as conn:
@@ -96,7 +109,7 @@ def pagina_carica_utenti():
                     credenziali.append({
                         "nominativo": nominativo,
                         "email": email,
-                        "password": password
+                        "password": password_utente
                     })
                 except Exception as e:
                     st.error(f"Errore per {nominativo}: {e}")
