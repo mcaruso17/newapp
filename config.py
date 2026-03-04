@@ -14,3 +14,7 @@ UFFICI = [str(i) for i in range(1, 14)] + ["CSR I", "CSR II"]
 
 # Dominio email
 EMAIL_DOMAIN = "mef.gov.it"
+
+# Credenziali admin per il primo caricamento
+ADMIN_USERNAME = "admin"
+ADMIN_PASSWORD = "qui_metti_una_password_sicura"
