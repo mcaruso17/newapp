@@ -3,6 +3,8 @@ from auth import Authenticator
 from permission import puo_modificare, puo_visualizzare, is_admin, richiedi_permesso
 from database import init_database
 from database import init_database, get_connection
+import pandas as pd
+from load_users import genera_email, genera_password
 
 # Inizializza database e autenticatore
 init_database()
@@ -59,7 +61,57 @@ def pagina_principale():
     # Pannello admin visibile solo ai DIR.
     if is_admin():
         pannello_admin()
+def pagina_carica_utenti():
+    """Permette all'admin di caricare utenti da Excel"""
+    st.title("Caricamento Utenti")
 
+    file = st.file_uploader("Carica il file Excel del personale", type=["xlsx"])
+
+    if file and st.button("Carica utenti"):
+        df = pd.read_excel(file)
+        credenziali = []
+
+        for _, riga in df.iterrows():
+            nominativo = riga["nominativo"]
+            email = genera_email(nominativo)
+            password = genera_password()
+
+            pw_hash, salt = Authenticator.hash_password(password)
+            stored = f"{pw_hash}:{salt}"
+
+            with get_connection() as conn:
+                try:
+                    conn.execute(
+                        """INSERT INTO users 
+                        (nominativo, email, password_hash, ruolo, ufficio, stanza, interno, cellulare)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                        (
+                            nominativo, email, stored,
+                            riga["ruolo"], str(riga["ufficio"]),
+                            str(riga.get("stanza", "")),
+                            str(riga.get("interno", "")),
+                            str(riga.get("cellulare", ""))
+                        )
+                    )
+                    credenziali.append({
+                        "nominativo": nominativo,
+                        "email": email,
+                        "password": password
+                    })
+                except Exception as e:
+                    st.error(f"Errore per {nominativo}: {e}")
+
+        if credenziali:
+            st.success(f"Caricati {len(credenziali)} utenti!")
+            df_cred = pd.DataFrame(credenziali)
+            st.dataframe(df_cred)
+            st.download_button(
+                "Scarica credenziali",
+                df_cred.to_csv(index=False),
+                "credenziali_temporanee.csv",
+                "text/csv"
+            )
+            st.warning("Scarica il file, distribuisci le password e poi eliminalo!")
 def pannello_admin():
     """Pannello per il direttore"""
     with st.expander("Gestione Utenti"):
@@ -81,8 +133,13 @@ def pannello_admin():
             st.success(f"Nuova password temporanea: {nuova_pw}")
             st.warning("Comunicala all'utente e poi chiudi questa pagina")
 # Flusso principale
+# Flusso principale
 if not st.session_state.authenticated:
-    pagina_login()
+    tab1, tab2 = st.tabs(["Login", "Carica Utenti"])
+    with tab1:
+        pagina_login()
+    with tab2:
+        pagina_carica_utenti()
 elif st.session_state.deve_cambiare_password:
     pagina_cambio_password()
 else:
