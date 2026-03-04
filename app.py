@@ -122,9 +122,9 @@ def pagina_carica_utenti():
             with get_connection() as conn:
                 try:
                     conn.execute(
-                        """INSERT OR IGNORE INTO users""" 
+                        """INSERT OR IGNORE INTO users 
                         (nominativo, email, password_hash, ruolo, ufficio, stanza, interno, cellulare)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?),
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
                         (
                             nominativo, email, stored,
                             riga["ruolo"], str(riga["ufficio"]),
