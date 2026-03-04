@@ -66,18 +66,44 @@ def pagina_carica_utenti():
     """Permette all'admin di caricare utenti da Excel"""
     st.title("Caricamento Utenti (Area Riservata)")
 
-    username = st.text_input("Username admin")
-    password = st.text_input("Password admin", type="password")
+    # Stato admin
+    if "admin_autenticato" not in st.session_state:
+        st.session_state.admin_autenticato = False
+    if "credenziali_generate" not in st.session_state:
+        st.session_state.credenziali_generate = None
 
-    if not st.button("Accedi come admin"):
-        return
-
-    if username != ADMIN_USERNAME or password != ADMIN_PASSWORD:
-        st.error("Credenziali admin non valide")
+    # Login admin
+    if not st.session_state.admin_autenticato:
+        username = st.text_input("Username admin")
+        password = st.text_input("Password admin", type="password")
+        if st.button("Accedi come admin"):
+            if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
+                st.session_state.admin_autenticato = True
+                st.rerun()
+            else:
+                st.error("Credenziali admin non valide")
         return
 
     st.success("Accesso admin confermato")
 
+    # Se ci sono credenziali già generate, mostrali
+    if st.session_state.credenziali_generate is not None:
+        st.subheader("Credenziali generate")
+        df_cred = pd.DataFrame(st.session_state.credenziali_generate)
+        st.dataframe(df_cred)
+        st.download_button(
+            "Scarica credenziali CSV",
+            df_cred.to_csv(index=False),
+            "credenziali_temporanee.csv",
+            "text/csv"
+        )
+        st.warning("Scarica il file, distribuisci le password e poi eliminalo!")
+        if st.button("Pulisci credenziali dalla schermata"):
+            st.session_state.credenziali_generate = None
+            st.rerun()
+        return
+
+    # Caricamento file
     file = st.file_uploader("Carica il file Excel del personale", type=["xlsx"])
 
     if file and st.button("Carica utenti"):
@@ -115,16 +141,9 @@ def pagina_carica_utenti():
                     st.error(f"Errore per {nominativo}: {e}")
 
         if credenziali:
+            st.session_state.credenziali_generate = credenziali
             st.success(f"Caricati {len(credenziali)} utenti!")
-            df_cred = pd.DataFrame(credenziali)
-            st.dataframe(df_cred)
-            st.download_button(
-                "Scarica credenziali",
-                df_cred.to_csv(index=False),
-                "credenziali_temporanee.csv",
-                "text/csv"
-            )
-            st.warning("Scarica il file, distribuisci le password e poi eliminalo!")
+            st.rerun()
 def pannello_admin():
     """Pannello per il direttore"""
     with st.expander("Gestione Utenti"):
