@@ -6,11 +6,11 @@ from auth import Authenticator
 from config import PASSWORD_LENGTH, EMAIL_DOMAIN, RUOLI, UFFICI
 
 def genera_email(nominativo: str) -> str:
-    """Da 'Rossi Mario' genera 'mario.rossi@mef.gov.it'"""
+    """Da 'Sapienza Maria Rosa' genera 'mariarosa.sapienza@mef.gov.it'"""
     nominativo = str(nominativo).strip()
     parti = nominativo.split()
     cognome = parti[0].lower()
-    nome = parti[1].lower() if len(parti) > 1 else ""
+    nome = "".join(parti[1:]).lower()  # unisce tutto dopo il cognome
     return f"{nome}.{cognome}@{EMAIL_DOMAIN}"
 
 def genera_password(length: int = PASSWORD_LENGTH) -> str:
